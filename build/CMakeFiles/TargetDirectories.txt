@@ -1,0 +1,3 @@
+C:/Users/mohamed nour/Desktop/New folder (2)/build/CMakeFiles/MyProject.dir
+C:/Users/mohamed nour/Desktop/New folder (2)/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/mohamed nour/Desktop/New folder (2)/build/CMakeFiles/ZERO_CHECK.dir
