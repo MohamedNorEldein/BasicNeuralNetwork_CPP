@@ -409,10 +409,19 @@ private:
 #ifdef DEBUG
         printf("****************************copy\n");
 #endif
-
-        for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+        if (otherTensor == 0)
         {
-            data[i] = otherTensor[i];
+            for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+            {
+                data[i] = 0;
+            }
+        }
+        else
+        {
+            for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+            {
+                data[i] = otherTensor[i];
+            }
         }
     }
 
@@ -445,6 +454,21 @@ public:
         }
     }
 
+    
+    static void _elementMul(Tensor *tensor1, Tensor *tensor2, Tensor *result)
+    {
+        size_t DIMENSION1 = tensor1->getRowsNum();
+        size_t DIMENSION2 = tensor1->getColumnNum();
+
+        for (size_t i = 0; i < DIMENSION1; i++)
+        {
+            for (size_t j = 0; j < DIMENSION2; j++)
+            {
+                result->setElement(i, j, tensor1->getElement(i, j) *tensor2->getElement(i, j));
+            }
+        }
+    }
+
     static void mull(Type scaler, Tensor *tensor, Tensor *result)
     {
         size_t DIMENSION1 = tensor->getRowsNum();
@@ -461,16 +485,15 @@ public:
 
     static void transpose(Tensor *tensor1, Tensor *result)
     {
-        size_t DIMENSION1 = tensor1->getRowsNum();
-        size_t DIMENSION2 = tensor1->getColumnNum();
-        result->DIMENSION1 = DIMENSION2;
-        result->DIMENSION2 = DIMENSION1;
+        size_t DIMENSION1 = result->getRowsNum();
+        size_t DIMENSION2 = result->getColumnNum();
 
         for (size_t i = 0; i < DIMENSION1; i++)
         {
             for (size_t j = 0; j < DIMENSION2; j++)
             {
-                result->setElement(j, i, tensor1->getElement(i, j));
+
+                result->setElement(i, j, tensor1->getElement(j, i));
             }
         }
     }
@@ -503,7 +526,10 @@ public:
         size_t DIMENSION2 = tensor1->getColumnNum();
         size_t DIMENSION3 = tensor2->getColumnNum();
 
+#ifdef DEBUG
         printf("(%u x %u) * (%u x %u)\n", tensor1->getRowsNum(), tensor1->getColumnNum(), tensor2->getRowsNum(), tensor2->getColumnNum());
+#endif
+
         if (tensor1->getColumnNum() != tensor2->getRowsNum())
         {
             printf("matmull dimminsion error\n");
@@ -716,6 +742,17 @@ public:
         return result;
     }
 
+    Tensor operator+=(const Tensor &other)
+    {
+        if (DIMENSION1 != other.getRowsNum())
+            throw 0;
+        if (DIMENSION2 != other.getColumnNum())
+            throw 0;
+
+        add(this, (Tensor *)(&other), this);
+        return *this;
+    }
+
     Tensor operator-(const Tensor &other)
     {
         if (DIMENSION1 != other.getRowsNum())
@@ -740,11 +777,52 @@ public:
 
         if (DIMENSION2 != other.getRowsNum())
             throw 0;
-        Tensor result(DIMENSION1, DIMENSION2);
+        Tensor result(DIMENSION1, other.DIMENSION2);
         matmull(this, (Tensor *)(&other), &result);
         return result;
     }
 
+    Tensor elementMul(const Tensor &other)
+    {
+        if (DIMENSION1 != other.DIMENSION1)
+            throw 0;
+
+        if (DIMENSION2 != other.DIMENSION2)
+            throw 0;
+
+        Tensor result(DIMENSION1, DIMENSION2);
+        _elementMul(this, (Tensor *)(&other), &result);
+        return result;
+    }
+
+    
+    Tensor& set(Tensor &other)
+    {
+        delete data;
+        
+        DIMENSION1= other.DIMENSION1;
+        DIMENSION2= other.DIMENSION2;
+    
+        data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
+
+        copy(other.data);
+        return *this;
+    }
+
+    
+    Tensor& set(Tensor &&other)
+    {
+        
+        DIMENSION1= other.DIMENSION1;
+        DIMENSION2= other.DIMENSION2;
+    
+        data = other.data;
+        other.data =0;
+        
+        return *this;
+    }
+
+public:
     Tensor inverse()
     {
         size_t DIMENSION1 = this->getRowsNum();
@@ -762,30 +840,46 @@ public:
 
     Tensor transpose()
     {
-        Tensor result(DIMENSION1, DIMENSION2);
+        Tensor result(DIMENSION2, DIMENSION1);
         transpose(this, &result);
         return result;
     }
 
 private:
-    void copyRow(Type *oldD, Type *newData, size_t oldStart_index, size_t newStart_index)
+    void copyRow(Type *srcdata, Type *desdata, size_t oldStart_index, size_t newStart_index)
     {
 
         for (size_t i = 0; i < DIMENSION2; i++)
         {
-            newData[newStart_index * DIMENSION2 + i] = oldD[oldStart_index * DIMENSION2 + i];
+            desdata[newStart_index * DIMENSION2 + i] = srcdata[oldStart_index * DIMENSION2 + i];
         }
     }
 
-    void copyColumn(Type *oldD, Type *newData, size_t oldStart_index, size_t newStart_index)
+    void copyColumn(Type *srcdata, Type *desdata, size_t oldStart_index, size_t newStart_index)
     {
         for (size_t i = 0; i < DIMENSION1; i++)
         {
-            newData[newStart_index + (DIMENSION2 + 1) * i] = oldD[oldStart_index + DIMENSION2 * i];
+            desdata[newStart_index + (DIMENSION2 + 1) * i] = srcdata[oldStart_index + DIMENSION2 * i];
         }
     }
 
 public:
+    void setRow(size_t index, Type *dValues)
+    {
+        for (size_t i = 0; i < DIMENSION2; i++)
+        {
+            data[index * DIMENSION2 + i] = dValues[ i];
+        }
+    }
+
+    void setColumn(size_t index, Type *dValues)
+    {
+        for (size_t i = 0; i < DIMENSION1; i++)
+        {
+            data[index + (DIMENSION2) * i] = dValues[i];
+        }
+    }
+
     void insertColumn(size_t index, Type constantValue)
     {
         if (index > DIMENSION2)
@@ -838,6 +932,47 @@ public:
         DIMENSION1++;
         delete data;
         data = newData;
+    }
+
+    void copyData(const Type *fdata)
+    {
+        copy(fdata);
+    }
+
+    void setData(Type *fdata)
+    {
+        data = fdata;
+    }
+
+    void ZERO()
+    {
+        copy(0);
+    }
+
+    Type *getData()
+    {
+        return data;
+    }
+
+    Type norm(){
+        Type n=0;
+        for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+        {
+            n += data[i]*data[i];
+        }
+        return sqrt(n);
+    }
+
+public:
+    Tensor<Type> applyFunction(Type (*func)(Type))
+    {
+        Tensor result(DIMENSION1, DIMENSION2);
+
+        for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+        {
+            result.data[i] = func(data[i]);
+        }
+        return result;
     }
 };
 
@@ -912,6 +1047,7 @@ void generate(Matrix<Type, DIMENSION> &mat)
         }
     }
 }
+
 template <typename Type>
 void generate(Tensor<Type> &tensor)
 {
@@ -922,7 +1058,44 @@ void generate(Tensor<Type> &tensor)
     {
         for (size_t j = 0; j < DIMENSION2; j++)
         {
-            tensor.setElement(i, j, Type(rand() % 100));
+            tensor.setElement(i, j, Type(rand() % 100) / 100);
         }
     }
+}
+
+template <typename Type>
+Tensor<Type> abs(Tensor<Type> &tensor)
+{
+    return tensor.applyFunction(abs);
+}
+
+template <typename Type>
+void generate(Type *data, size_t num)
+{
+    for (size_t i = 0; i < num; i++)
+    {
+        data[i] = Type(rand() % 100);
+    }
+}
+
+template <typename Type>
+Type derivative(Type x, Type (*func)(Type), Type dx = 0.00001)
+{
+    return (func(x + dx) - func(x)) / dx;
+}
+
+template <typename Type>
+Type solve(Type x, Type (*func)(Type), Type ys = 0, Type dx = 0.00001, size_t count = 10)
+{
+    float df = 0, f = 0;
+    for (size_t i = 0; i < count; i++)
+    {
+        df = derivative(x, func, dx);
+        f = ys - func(x);
+        if (df == 0 || f == 0)
+            return x;
+
+        x = x - f / df;
+    }
+    return x;
 }

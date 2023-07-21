@@ -6,6 +6,7 @@
 
 from typing import Any
 import pandas as pd
+import numpy as np
 import ctypes
 
 #the glopal cpp dll
@@ -46,7 +47,7 @@ class Tensor:
         printf(self.pointer)
         return
 
-    def clean(self):
+    def __del__(self):
         func = file.deleteTensorFloat
         func.argtypes = [ctypes.c_void_p]
         func(self.pointer)
@@ -67,13 +68,21 @@ class Tensor:
         tf.pointer = func(self.pointer, other.getPointer())
         return tf
     
-    def __mul__(self, other ):
-        func = file.mullTensorFloat
-        func.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
-        func.restype = ctypes.c_void_p
-        tf = Tensor()
-        tf.pointer = func(self.pointer, other.getPointer())
-        return tf
+    def __mul__(self, other):
+        if(type(other)==Tensor):
+            func = file.mullTensorFloat
+            func.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
+            func.restype = ctypes.c_void_p
+            tf = Tensor()
+            tf.pointer = func(self.pointer, other.getPointer())
+            return tf
+        else:
+            func = file.scalarmullTensorFloat
+            func.argtypes = [ctypes.c_void_p,ctypes.c_float]
+            func.restype = ctypes.c_void_p
+            tf = Tensor()
+            tf.pointer = func(self.pointer, other)
+            return tf
 
     def transpose(self):
         func = file.transposeTensorFloat
@@ -103,31 +112,45 @@ class Tensor:
         func.restype = ctypes.c_float
         return func(self.pointer,i,j)
          
+    def getCorelationMatrix(self):
+        func = file.getCorelationMatrix
+        func.argtypes = [ctypes.c_void_p]
+        func.restype = ctypes.c_void_p
+       
+        tf = Tensor()
+        tf.pointer = func(self.pointer)
+        return tf
+         
+
+def CreateTensorFromPandasDataFrame(data, KeyArray:list)->Tensor:
+    n  = len(data.index)
+
+    tf1 = Tensor(n,len(KeyArray)+1)
+
+    for i in range(0,n):
+        tf1.setitem(i,0,1)
+        for j in range(0,len(KeyArray)):
+            tf1.setitem(i,j+1,data[KeyArray[j]].array[i])
+    
+    return tf1
+
 
 
 if(__name__=='__main__'):
-     
-    data = pd.read_csv("C:\\Users\\mohamed nour\\Downloads\\nba_salary_stats.csv")
-
-    #tf1 = Tensor(python_array = data["fg"].array.tolist())
-    #tf2 = Tensor(python_array = data["fga"].array.tolist())
     
-    tf1 = Tensor(3,4)
-    tf2 = Tensor(3,4)
+    data = pd.read_csv("nba_salary_stats.csv")
+    data.dropna()
 
-    tf1.print()
-    tf2.print()
-    tf3 = tf1.transpose()
+    tf1 = CreateTensorFromPandasDataFrame(data,["fg","fga"])
+    tf2 = Tensor(len(data.index),1,data["salary"].array.tolist())    
+
+    #tf1.print()
+    #tf2.print()
+
+    tf3 = tf1.getCorelationMatrix()*tf2 * 2
     tf3.print()
 
-    tf4 = tf3*tf2
-    tf4.print()
     
-    print(tf4.getitem(0,0))
-
-    tf1.clean()
-    tf2.clean()
-    tf3.clean()
 
    
 

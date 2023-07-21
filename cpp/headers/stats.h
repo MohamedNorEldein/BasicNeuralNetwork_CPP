@@ -1,14 +1,14 @@
-#include <iostream>
+#pragma once
 
+#include <iostream>
 #include "vec.h"
 
 
-#ifndef API 
-#define API __declspec(dllexport)
-#else
-#define API __declspec(dllimport)
-#endif
+template <typename Type>
+Tensor<Type> correlationMatrix(Tensor<Type> &a)
+{
+    Tensor<Type> b = a.transpose();
 
-#ifdef __cplusplus
-#define CAPI extern "C" API
-#endif
+    return ( b*a).inverse()*b;
+}
+
