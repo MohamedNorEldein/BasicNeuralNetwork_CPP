@@ -390,7 +390,7 @@ public:
 
 /****************tensor****************/
 
-#ifdef DEBUG
+#ifdef _DEBUG
 static size_t counter;
 #endif
 
@@ -403,12 +403,13 @@ private:
     size_t DIMENSION2; // no of coulmns = no of elements in a row
 
 private:
-    void copy(const Type *otherTensor)
+    void copy(Type *otherTensor)
     {
 
-#ifdef DEBUG
+#ifdef _DEBUG
         printf("****************************copy\n");
 #endif
+
         if (otherTensor == 0)
         {
             for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
@@ -454,7 +455,6 @@ public:
         }
     }
 
-    
     static void _elementMul(Tensor *tensor1, Tensor *tensor2, Tensor *result)
     {
         size_t DIMENSION1 = tensor1->getRowsNum();
@@ -464,7 +464,7 @@ public:
         {
             for (size_t j = 0; j < DIMENSION2; j++)
             {
-                result->setElement(i, j, tensor1->getElement(i, j) *tensor2->getElement(i, j));
+                result->setElement(i, j, tensor1->getElement(i, j) * tensor2->getElement(i, j));
             }
         }
     }
@@ -497,28 +497,6 @@ public:
             }
         }
     }
-    /*
-        static Tensor *mull(Tensor *tensor1, Tensor *tensor2)
-        {
-            size_t DIMENSION1 = tensor1->getRowsNum();
-            size_t DIMENSION2 = tensor1->getColumnNum();
-
-            if (DIMENSION1 != tensor2->getRowsNum() || DIMENSION2 != tensor2->getColumnNum())
-                return 0;
-
-            Tensor *result = new Tensor(DIMENSION1, DIMENSION2);
-
-            for (size_t i = 0; i < DIMENSION1; i++)
-            {
-                for (size_t j = 0; j < DIMENSION2; j++)
-                {
-                    result->setElement(i, j, tensor1->getElement(i, j) * tensor2->getElement(i, j));
-                }
-            }
-
-            return result;
-        }
-    */
 
     static void matmull(Tensor *tensor1, Tensor *tensor2, Tensor *result)
     {
@@ -526,7 +504,7 @@ public:
         size_t DIMENSION2 = tensor1->getColumnNum();
         size_t DIMENSION3 = tensor2->getColumnNum();
 
-#ifdef DEBUG
+#ifdef _DEBUG
         printf("(%u x %u) * (%u x %u)\n", tensor1->getRowsNum(), tensor1->getColumnNum(), tensor2->getRowsNum(), tensor2->getColumnNum());
 #endif
 
@@ -629,7 +607,7 @@ private:
                     addScaledRow(augmentedMatrix, augmentedDimension, j, i, -factor);
                 }
             }
-#ifdef DEBUG
+#ifdef _DEBUG
             printf("inverted\n");
 #endif
         }
@@ -652,59 +630,67 @@ public:
 
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
 
-#ifdef DEBUG
+#ifdef _DEBUG
+        printf("created\n");
+        counter++;
+#endif
+    }
+    Tensor(void) : DIMENSION1(0), DIMENSION2(0)
+    {
+        data = 0;
+#ifdef _DEBUG
         printf("created\n");
         counter++;
 #endif
     }
 
-    Tensor(size_t DIMENSION1, size_t DIMENSION2, const float *fdata) : DIMENSION1(DIMENSION1), DIMENSION2(DIMENSION2)
+    Tensor(size_t DIMENSION1, size_t DIMENSION2, float *fdata) : DIMENSION1(DIMENSION1), DIMENSION2(DIMENSION2)
     {
 
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
         copy(fdata);
 
-#ifdef DEBUG
+#ifdef _DEBUG
         printf("created\n");
         counter++;
 #endif
     }
 
-    Tensor(Tensor &otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
+    Tensor( Tensor &otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
     {
 
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
         copy(otherTensor.data);
 
-#ifdef DEBUG
+#ifdef _DEBUG
         printf("created\n");
         counter++;
 #endif
     }
+    
+        Tensor(Tensor &&otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
+        {
+            data = otherTensor.data;
+            otherTensor.data = 0;
 
-    Tensor(Tensor &&otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
-    {
-        data = otherTensor.data;
-        otherTensor.data = 0;
-
-#ifdef DEBUG
-        printf("created\n");
-        counter++;
-#endif
-    }
-
+    #ifdef _DEBUG
+            printf("created\n");
+            counter++;
+    #endif
+        }
+    
     ~Tensor()
     {
         free(data);
 
-#ifdef DEBUG
+#ifdef _DEBUG
         printf("Tensor deleted\n");
         counter--;
 #endif
     }
 
 public:
-    Type *operator[](size_t i)
+    Type *operator[](size_t i) const
     {
         return data + DIMENSION2 * i;
     }
@@ -730,7 +716,7 @@ public:
     }
 
 public:
-    Tensor operator+(const Tensor &other)
+    Tensor operator+(const Tensor &other) const
     {
         if (DIMENSION1 != other.getRowsNum())
             throw 0;
@@ -738,22 +724,35 @@ public:
             throw 0;
 
         Tensor result(DIMENSION1, DIMENSION2);
-        add(this, (Tensor *)(&other), &result);
+        add((Tensor *)this, (Tensor *)(&other), &result);
         return result;
     }
 
-    Tensor operator+=(const Tensor &other)
+    const Tensor &operator+=(const Tensor &other) const
     {
         if (DIMENSION1 != other.getRowsNum())
             throw 0;
         if (DIMENSION2 != other.getColumnNum())
             throw 0;
 
-        add(this, (Tensor *)(&other), this);
+        add((Tensor *)this, (Tensor *)(&other), (Tensor *)this);
         return *this;
     }
 
-    Tensor operator-(const Tensor &other)
+    void operator=(const Tensor &other)
+    {
+        if (DIMENSION1 != other.getRowsNum())
+            throw 0;
+        if (DIMENSION2 != other.getColumnNum())
+            throw 0;
+
+        for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+        {
+            data[i] = other.data[i];
+        }
+    }
+
+    Tensor operator-(const Tensor &other) const
     {
         if (DIMENSION1 != other.getRowsNum())
             throw 0;
@@ -761,28 +760,28 @@ public:
             throw 0;
 
         Tensor result(DIMENSION1, DIMENSION2);
-        sub(this, (Tensor *)(&other), &result);
+        sub((Tensor *)this, (Tensor *)(&other), &result);
         return result;
     }
 
-    Tensor operator*(Type scaler)
+    Tensor operator*(Type scaler) const
     {
         Tensor result(DIMENSION1, DIMENSION2);
-        mull(scaler, this, &result);
+        mull(scaler, (Tensor *)this, &result);
         return result;
     }
 
-    Tensor operator*(const Tensor &other)
+    Tensor operator*(const Tensor &other) const
     {
 
         if (DIMENSION2 != other.getRowsNum())
             throw 0;
         Tensor result(DIMENSION1, other.DIMENSION2);
-        matmull(this, (Tensor *)(&other), &result);
+        matmull((Tensor *)this, (Tensor *)(&other), &result);
         return result;
     }
 
-    Tensor elementMul(const Tensor &other)
+    Tensor elementMul(const Tensor &other) const
     {
         if (DIMENSION1 != other.DIMENSION1)
             throw 0;
@@ -791,37 +790,34 @@ public:
             throw 0;
 
         Tensor result(DIMENSION1, DIMENSION2);
-        _elementMul(this, (Tensor *)(&other), &result);
+        _elementMul((Tensor *)this, (Tensor *)(&other), &result);
         return result;
     }
 
-    
-    Tensor& set(Tensor &other)
+    void set(const Tensor &other)
     {
-        delete data;
-        
-        DIMENSION1= other.DIMENSION1;
-        DIMENSION2= other.DIMENSION2;
-    
-        data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
+        delete this->data;
 
+        DIMENSION1 = other.DIMENSION1;
+        DIMENSION2 = other.DIMENSION2;
+
+        this->data = (Type *)calloc(DIMENSION1 * DIMENSION2, sizeof(Type));
+
+        //        print(other.data,DIMENSION1 * DIMENSION2);
         copy(other.data);
-        return *this;
+        // printf("%x %x\n",data, other.data);
     }
-
     
-    Tensor& set(Tensor &&other)
-    {
-        
-        DIMENSION1= other.DIMENSION1;
-        DIMENSION2= other.DIMENSION2;
-    
-        data = other.data;
-        other.data =0;
-        
-        return *this;
-    }
+        void set(Tensor &&other)
+        {
 
+            DIMENSION1 = other.DIMENSION1;
+            DIMENSION2 = other.DIMENSION2;
+
+            data = other.data;
+            other.data = 0;
+        }
+    
 public:
     Tensor inverse()
     {
@@ -833,15 +829,15 @@ public:
 
         Tensor result(DIMENSION1, DIMENSION2);
 
-        invertMatrix(this->data, this->DIMENSION1, result.data);
+        invertMatrix(((Tensor *)this)->data, ((Tensor *)this)->DIMENSION1, result.data);
 
         return result;
     }
 
-    Tensor transpose()
+    Tensor transpose() const
     {
         Tensor result(DIMENSION2, DIMENSION1);
-        transpose(this, &result);
+        transpose((Tensor *)this, &result);
         return result;
     }
 
@@ -868,7 +864,7 @@ public:
     {
         for (size_t i = 0; i < DIMENSION2; i++)
         {
-            data[index * DIMENSION2 + i] = dValues[ i];
+            data[index * DIMENSION2 + i] = dValues[i];
         }
     }
 
@@ -876,7 +872,7 @@ public:
     {
         for (size_t i = 0; i < DIMENSION1; i++)
         {
-            data[index + (DIMENSION2) * i] = dValues[i];
+            data[index + (DIMENSION2)*i] = dValues[i];
         }
     }
 
@@ -934,13 +930,15 @@ public:
         data = newData;
     }
 
-    void copyData(const Type *fdata)
+    void copyData(Type *fdata)
     {
         copy(fdata);
     }
 
-    void setData(Type *fdata)
+    void setData(Type *fdata, size_t n, size_t m)
     {
+        DIMENSION1 = n;
+        DIMENSION2 = m;
         data = fdata;
     }
 
@@ -954,17 +952,18 @@ public:
         return data;
     }
 
-    Type norm(){
-        Type n=0;
+    Type norm() const
+    {
+        Type n = 0;
         for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
         {
-            n += data[i]*data[i];
+            n += data[i] * data[i];
         }
         return sqrt(n);
     }
 
 public:
-    Tensor<Type> applyFunction(Type (*func)(Type))
+    Tensor<Type> applyFunction(Type (*func)(Type)) const
     {
         Tensor result(DIMENSION1, DIMENSION2);
 
@@ -1006,7 +1005,7 @@ void printf(vec<Type, DIMENSION> &vec)
 }
 
 template <typename Type>
-void printf(Tensor<Type> &tensor)
+void printf(const Tensor<Type> &tensor)
 {
 
     size_t DIMENSION1 = tensor.getRowsNum();
@@ -1015,11 +1014,12 @@ void printf(Tensor<Type> &tensor)
     // Display the result
     for (size_t i = 0; i < DIMENSION1; i++)
     {
-        for (size_t j = 0; j < DIMENSION2; j++)
+        std::cout << " " << (tensor[i][0]);
+        for (size_t j = 1; j < DIMENSION2; j++)
         {
-            std::cout << tensor[i][j] << " ";
+            std::cout << ", " << tensor[i][j];
         }
-        std::cout << std::endl;
+        std::cout << ",\n";
     }
     printf("}\n");
 }
@@ -1058,7 +1058,7 @@ void generate(Tensor<Type> &tensor)
     {
         for (size_t j = 0; j < DIMENSION2; j++)
         {
-            tensor.setElement(i, j, Type(rand() % 100) / 100);
+            tensor.setElement(i, j, Type(rand() % 100) / 1000);
         }
     }
 }
@@ -1076,6 +1076,16 @@ void generate(Type *data, size_t num)
     {
         data[i] = Type(rand() % 100);
     }
+}
+
+template <typename Type>
+void print(Type *data, size_t num)
+{
+    for (size_t i = 0; i < num; i++)
+    {
+        printf("%f ", data[i]);
+    }
+    printf("\n");
 }
 
 template <typename Type>

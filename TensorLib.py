@@ -1,17 +1,17 @@
 """
+    TENSOR CLASS
+    is C liberary for linear Algebra with python interface. 
+
     this script is an application of ctypes liberary in python where the linear algebra class is created in 
     cpp in the file vec.h, a wraper is build over it in C in the file stat.h and stat.cpp
     here a python class in the scipt file to wrape up the C api. 
 """
 
-from typing import Any
-import pandas as pd
-import numpy as np
 import ctypes
 
 #the glopal cpp dll
 
-file = ctypes.WinDLL(".\\build\\Release\\MyProject.dll")
+file = ctypes.WinDLL("./build/Release/MyProject.dll")
 
 class Tensor:
     def __init__(self,numrows=None,numColumns=None, python_array=None) -> None:
@@ -42,7 +42,7 @@ class Tensor:
         return self.pointer
     
     def print(self):
-        printf = file.print
+        printf = file.printTensorFloat
         printf.argtypes = [ctypes.c_void_p]
         printf(self.pointer)
         return
@@ -133,22 +133,6 @@ def CreateTensorFromPandasDataFrame(data, KeyArray:list)->Tensor:
             tf1.setitem(i,j+1,data[KeyArray[j]].array[i])
     
     return tf1
-
-
-
-if(__name__=='__main__'):
-    
-    data = pd.read_csv("nba_salary_stats.csv")
-    data.dropna()
-
-    tf1 = CreateTensorFromPandasDataFrame(data,["fg","fga"])
-    tf2 = Tensor(len(data.index),1,data["salary"].array.tolist())    
-
-    #tf1.print()
-    #tf2.print()
-
-    tf3 = tf1.getCorelationMatrix()*tf2 * 2
-    tf3.print()
 
     
 

@@ -2,7 +2,7 @@
 #pragma once
 #include "vec.h"
 #include "stats.h"
-
+#include "NeuralNetworks.h"
 
 #ifndef API
 #define API __declspec(dllexport)
@@ -16,8 +16,6 @@
 #define CAPI API
 #endif
 
-
-#include "../headers/stats.h"
 
 #define pTensor Tensor<float> *
 
@@ -37,10 +35,21 @@ CAPI void *transposeTensorFloat(void *tf1);
 
 CAPI void *inverseTensorFloat(void *tf1);
 
-CAPI void print(void *tf);
+CAPI void printTensorFloat(void *tf);
 
 CAPI void setElementTensorFloat(void *tf, size_t i, size_t j, float value);
 
 CAPI float getElementTensorFloat(void *tf, size_t i, size_t j);
 
 CAPI void *getCorelationMatrix(void *a);
+
+
+CAPI void *CreateNeuralNetwork(size_t inputNum);
+CAPI void DeleteNeuralNetwork(void *);
+CAPI void addLayerNeuralNetwork(void *, size_t,void*);
+CAPI void addLogisticLayerNeuralNetwork(void *pNeuralNetwork, size_t outputNum, void *data);
+CAPI void* calcOutputNeuralNetwork(void *, void*);
+CAPI void* calcErrorNeuralNetwork(void *,  void*,  void *);
+
+CAPI float trainNeuralNetwork(void *, void *, void *, size_t, size_t, float);
+CAPI float learnNeuralNetwork(void *, void *, void *, size_t, void *, void *, size_t, size_t, float);
