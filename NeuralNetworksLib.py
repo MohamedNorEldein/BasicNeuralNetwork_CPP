@@ -8,12 +8,12 @@ class NeuralNetwork:
         func.argtypes = [ctypes.c_size_t]
         func.restype = ctypes.c_void_p
         self.pointer = func(inputNum)
-        print("constructor self.pointer : ",hex (self.pointer),"\n")
+        #print("constructor self.pointer : ",hex (self.pointer),"\n")
 
         return
 
     def __del__(self):
-        print("__del__ self.pointer : ",self.pointer,"\n")
+        #print("__del__ self.pointer : ",self.pointer,"\n")
         
         func = file.DeleteNeuralNetwork
         func.argtypes = [ctypes.c_void_p]
@@ -71,3 +71,9 @@ class NeuralNetwork:
         n = len(train_x)
         return func(self.pointer,(ctypes.c_float * n)(*train_x),(ctypes.c_float * n)(*train_y),(ctypes.c_float * n)(*test_x),(ctypes.c_float * n)(*test_y), n,count, learningRate)
 
+    def batchTrain(self, train_x , train_y,count:int, learningRate:float):
+        a = int((len(train_x)/2)**0.5)
+
+        for i in range(0,a ):
+            self.train(train_x[0:a*a],train_y[0:a*a],count,learningRate)    
+        return

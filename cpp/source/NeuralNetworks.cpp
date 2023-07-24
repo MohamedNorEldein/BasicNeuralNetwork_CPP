@@ -175,7 +175,9 @@ float NeuralNetworks::train(float *learn_x, float *learn_y, size_t n, size_t cou
         {
             er = Probagration(learn_x, learn_y, n, learningRate);
         }
+//#if _DEBUG
         printf("%f\n", er);
+//#endif
         // if(abs(er-e2)<er/100)
         //    return er;
         e2 = er;
@@ -237,7 +239,6 @@ float NeuralNetworks::learn(float **train_x, float **train_y, size_t train_n, fl
     }
     return er;
 }
-
 
 float NeuralNetworks::learn(float *train_x, float *train_y, size_t train_n, float *test_x, float *test_y, size_t test_n, size_t count, float learningRate)
 {
