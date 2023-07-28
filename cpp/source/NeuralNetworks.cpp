@@ -72,6 +72,7 @@ TensorFloat NeuralNetworks::calcOutput(const TensorFloat &x)
     {
         outputs[i] = (weights[i] * outputs[i - 1]).applyFunction(funcs[i]);
     }
+
     return outputs.back();
 }
 
@@ -176,7 +177,7 @@ float NeuralNetworks::train(float *learn_x, float *learn_y, size_t n, size_t cou
             er = Probagration(learn_x, learn_y, n, learningRate);
         }
 //#if _DEBUG
-        printf("%f\n", er);
+        printf("%f, %f \n", er,er/n);
 //#endif
         // if(abs(er-e2)<er/100)
         //    return er;
@@ -292,7 +293,7 @@ int main()
 
     Lr.addLayer(b, sigmoid, dsigmoid);
 
-    generate(Lr.weights[0]);
+    generate(Lr.getWeight(0));
     // generate(Lr.weights[1]);
     // generate(Lr.weights[2]);
 

@@ -43,6 +43,10 @@ CAPI float getElementTensorFloat(void *tf, size_t i, size_t j);
 
 CAPI void *getCorelationMatrix(void *a);
 
+CAPI size_t getRowsNum(void *a);
+CAPI size_t getColumnNum(void *a);
+
+/**************************************************************/
 
 CAPI void *CreateNeuralNetwork(size_t inputNum);
 CAPI void DeleteNeuralNetwork(void *);
@@ -53,3 +57,4 @@ CAPI void* calcErrorNeuralNetwork(void *,  void*,  void *);
 
 CAPI float trainNeuralNetwork(void *, void *, void *, size_t, size_t, float);
 CAPI float learnNeuralNetwork(void *, void *, void *, size_t, void *, void *, size_t, size_t, float);
+CAPI void* getWeight(void* pNeuralNetwork, size_t i);

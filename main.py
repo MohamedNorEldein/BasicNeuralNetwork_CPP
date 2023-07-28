@@ -3,52 +3,75 @@ import pandas as pd
 import numpy as np
 import NeuralNetworksLib
 import math
+import matplotlib.pyplot as plt
+
+
+def dummies_to_numbers(dummies_list:list):
+    a    =0
+    index =0
+    for i in range(0,len(dummies_list)):
+        if(dummies_list[i][0] > a):
+            a=dummies_list[i][0]
+            index =i
+
+    return a,index
+
+def readTrainData(string:str):
+    dataF = pd.read_csv(string)
+    dataF.dropna()
+
+    a:int = len(dataF)
+
+    x = dataF.iloc[:a,1:].values.astype(float)
+    y = pd.get_dummies(dataF["label"]).values[:a].astype(float)
+    
+    return x,y
+
+
+def readTestData(string:str):
+    dataF = pd.read_csv(string)
+    dataF.dropna()
+
+    a:int = len(dataF)
+
+    x = dataF.iloc[:a,1:].values
+    
+    return x
 
 
 def main():
-    data = pd.read_csv("nba_salary_stats.csv")
-    data.dropna()
 
-    tf1 = NeuralNetworksLib.CreateTensorFromPandasDataFrame(data,["fg","fga"])
-    tf2 = NeuralNetworksLib.Tensor(len(data.index),1,data["salary"].array.tolist())    
+    train_x , train_y = readTrainData("digit-recognizer\\train.csv")
+    test_x  = readTestData("digit-recognizer\\test.csv")
 
-    tf1.print()
-    tf2.print()
 
-    tf3 = tf1.getCorelationMatrix()*tf2 * 2 
-    tf3.print()
+    nn = NeuralNetworksLib.NeuralNetwork(train_x.shape[1])
+    nn.addLogisticLayer(train_y.shape[1])
 
-def normalize( ar1 ):
-    mx = ar1.max()
-    mn = ar1.min()
-    ar1 = (ar1 - mn)/(mx-mn)
-    return ar1,(mx-mn),mn
+    print("start reading weight matrix \n" )
+
+    array = pd.read_csv("./file.csv").iloc[:,1:]
+    nn.getWeight(0).fromlist(array.values)
+    #nn.getWeight(0).print()
+    
+    print("finish reading\n" )
+
+    #nn.train(train_x,train_y,5,0.8)
+    w1 = nn.getWeightsAsDataFrame()
+    w1.to_csv("file.csv")
+    
+    print(f"end \n ")
+    
+    for i in range(0,10):
+        print(i ,train_y[i] , dummies_to_numbers(nn.calcOutput(train_x[i])))
+        plt.imshow(train_x[i].reshape(28,28),cmap='gray')
+        plt.show()
 
 
 if(__name__=='__main__'):
     
-    data = pd.read_csv("nba_salary_stats.csv")
-    data.dropna()
+    dataF = pd.read_csv("digit-recognizer/train.csv")
+    dataF.dropna()
 
-
-    nn = NeuralNetworksLib.NeuralNetwork(1)
-    nn.addLayer(1)
-
-    array1 = data["fga"]
-    array2 = data["salary"]
-
-    a:int = int (math.sqrt(len(array1)/2))
-
-    ar1,m1,n1 = normalize(array1)
-    ar2,m2,n2 = normalize(array2)
+    main()
     
-    nn.batchTrain(ar1,ar2,10,0.01)
-    
-    er=0
-    for i in range(len(array1)//2, len(array1)):
-        y1 = round( nn.calcOutput(NeuralNetworksLib.Tensor(1,1, [ar1[i]])).getitem(0,0),3)
-        y2 = round (ar2[i],3)
-        er+= abs(y1 - y2) 
-        print(f"{i} {array1[i]} : {y1} , {y2}")
-
-    print(f"end \n test error is {round(er,3)} ")

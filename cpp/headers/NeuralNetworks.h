@@ -15,7 +15,7 @@ float unity(float a);
 
 class NeuralNetworks
 {
-public:
+private:
     std::vector<TensorFloat> weights, gradints, outputs;
     size_t inputNum, outNum;
     std::vector<float (*)(float)> funcs;
@@ -29,7 +29,16 @@ public:
     void addLayer(size_t outputNum, float (*func)(float), float (*dfunc)(float),float*a =0);
 
     void print(std::vector<TensorFloat> &ws);
+public: 
+    TensorFloat& getWeight(size_t index){
+        return weights[index];
+    }
 
+    std::vector<TensorFloat>& getWeights(){
+        return weights;
+    }
+    
+public:
     TensorFloat calcOutput(const TensorFloat &x);
 
     TensorFloat calcError(const TensorFloat &x, const TensorFloat &y);

@@ -48,6 +48,6 @@
         "xutility": "cpp",
         "vector": "cpp"
     },
-    "cmake.sourceDirectory": "C:/Users/mohamed nour/Desktop/New folder (2)/cpp",
+    "cmake.sourceDirectory": "C:/Users/mohamed nour/Desktop/AI_Project/cpp",
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

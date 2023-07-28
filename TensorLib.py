@@ -14,30 +14,28 @@ import ctypes
 file = ctypes.WinDLL("./build/Release/MyProject.dll")
 
 class Tensor:
-    def __init__(self,numrows=None,numColumns=None, python_array=None) -> None:
+    def __init__(self, pointer=0) -> None:
 
-        if((python_array==None) and (numColumns==None) and (numrows==None)):
-            self.pointer = ctypes.c_void_p(0)
+        if(pointer!=0):
+            self.pointer = ctypes.c_void_p(pointer)
             return
-        elif((python_array==None) and (numColumns!=None) and (numrows!=None)):
-            func = file.createTensorFloat
+        self.pointer = 0
+        return            
 
+    def init(self,numrows,numColumns, python_array=[]):
+        if(len(python_array)==0):
+            func = file.createTensorFloat
             func.argtypes = [ctypes.c_size_t,ctypes.c_size_t]
             func.restype = ctypes.c_void_p
-
             self.pointer = func(numrows,numColumns)
             return
-        else:
-            func = file.initTensorFloat
-
-            func.argtypes = [ctypes.c_size_t,ctypes.c_size_t,ctypes.POINTER(ctypes.c_float)]
-            func.restype = ctypes.c_void_p
-
-            c_array = (ctypes.c_float * len(python_array))(*python_array)
-            self.pointer = func(numrows,numColumns,c_array)
-            return
+        func = file.initTensorFloat
+        func.argtypes = [ctypes.c_size_t,ctypes.c_size_t,ctypes.POINTER(ctypes.c_float)]
+        func.restype = ctypes.c_void_p
+        c_array = (ctypes.c_float * len(python_array))(*python_array)
+        self.pointer = func(numrows,numColumns,c_array)
+        return
     
-
     def getPointer(self):
         return self.pointer
     
@@ -56,33 +54,27 @@ class Tensor:
         func = file.addTensorFloat
         func.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
         func.restype = ctypes.c_void_p
-        tf = Tensor()
-        tf.pointer = func(self.pointer, other.getPointer())
-        return tf
-
+        return Tensor(func(self.pointer, other.getPointer()))
+         
     def __sub__(self, other ):
         func = file.subTensorFloat
         func.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
         func.restype = ctypes.c_void_p
-        tf = Tensor()
-        tf.pointer = func(self.pointer, other.getPointer())
-        return tf
+        return Tensor(func(self.pointer, other.getPointer()))
+
     
     def __mul__(self, other):
         if(type(other)==Tensor):
             func = file.mullTensorFloat
             func.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
             func.restype = ctypes.c_void_p
-            tf = Tensor()
-            tf.pointer = func(self.pointer, other.getPointer())
-            return tf
+            return Tensor(func(self.pointer, other.getPointer()))
+
         else:
             func = file.scalarmullTensorFloat
             func.argtypes = [ctypes.c_void_p,ctypes.c_float]
             func.restype = ctypes.c_void_p
-            tf = Tensor()
-            tf.pointer = func(self.pointer, other)
-            return tf
+            return Tensor(func(self.pointer, other.getPointer()))
 
     def transpose(self):
         func = file.transposeTensorFloat
@@ -120,7 +112,54 @@ class Tensor:
         tf = Tensor()
         tf.pointer = func(self.pointer)
         return tf
-         
+
+    def getColumnNum(self) ->int:
+        func = file.getColumnNum
+        func.argtypes = [ctypes.c_void_p]
+        func.restype = ctypes.c_size_t
+        return func(self.pointer)
+    
+    def getRowsNum(self) ->int:
+        func = file.getRowsNum
+        func.argtypes = [ctypes.c_void_p]
+        func.restype = ctypes.c_size_t
+        return func(self.pointer)
+
+    def tolist(self)->list:
+        n1 = self.getRowsNum()
+        n2 = self.getColumnNum()
+        out = []
+        for i in range(0,n1):
+            a = []
+            for j in range(0,n2):
+                a.append(self.getitem(i,j))
+            out.append(a)    
+        return out    
+
+    
+    def fromlist(self, array):
+        n1 = self.getRowsNum()
+        n2 = self.getColumnNum()
+       
+        if(len(array) == n1 and len(array[0])==n2):
+
+            for i in range(0,n1):
+                for j in range(0,n2):
+                    self.setitem(i,j,array[i][j])
+                    
+            return   
+        else :
+            print("dimminsion error")
+
+
+    
+class TensorCover(Tensor):
+    def __del__(self):
+        return 
+    
+
+    
+
 
 def CreateTensorFromPandasDataFrame(data, KeyArray:list)->Tensor:
     n  = len(data.index)
@@ -133,17 +172,3 @@ def CreateTensorFromPandasDataFrame(data, KeyArray:list)->Tensor:
             tf1.setitem(i,j+1,data[KeyArray[j]].array[i])
     
     return tf1
-
-    
-
-   
-
-
-    
-
-
-    
-
-    
-
-
