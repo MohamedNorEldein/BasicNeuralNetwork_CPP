@@ -2,10 +2,10 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\mohamed nour\Desktop\New folder (2)\build\x64\Release\ZERO_CHECK</FullPath>
+      <FullPath>C:\Users\mohamed nour\Desktop\AI_Project\build\x64\Release\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>C:\Users\mohamed nour\Desktop\New folder (2)\build\Release\MyProject.dll</FullPath>
+      <FullPath>C:\Users\mohamed nour\Desktop\AI_Project\build\Release\MyProject.dll</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

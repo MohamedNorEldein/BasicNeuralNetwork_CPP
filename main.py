@@ -32,9 +32,7 @@ def readTestData(string:str):
     dataF = pd.read_csv(string)
     dataF.dropna()
 
-    a:int = len(dataF)
-
-    x = dataF.iloc[:a,1:].values
+    x = dataF.iloc[:,:].values.astype(float)
     
     return x
 
@@ -62,9 +60,9 @@ def main():
     
     print(f"end \n ")
     
-    for i in range(0,10):
-        print(i ,train_y[i] , dummies_to_numbers(nn.calcOutput(train_x[i])))
-        plt.imshow(train_x[i].reshape(28,28),cmap='gray')
+    for i in range(0,30):
+        print(i , dummies_to_numbers(nn.calcOutput(test_x[i])))
+        plt.imshow(test_x[i].reshape(28,28),cmap='gray')
         plt.show()
 
 

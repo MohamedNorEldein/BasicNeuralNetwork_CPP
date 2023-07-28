@@ -1,16 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\mohamed nour\Desktop\New folder (2)\cpp\source\Stat.cpp">
+    <ClCompile Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\source\Stat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\source\CAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\source\NeuralNetworks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\mohamed nour\Desktop\New folder (2)\cpp\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{8F280829-4766-3DE6-8AF5-222B55C3A612}</UniqueIdentifier>
+      <UniqueIdentifier>{97F4CE77-B258-3E72-8160-236062D41160}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

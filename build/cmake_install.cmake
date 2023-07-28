@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/mohamed nour/Desktop/New folder (2)/cpp
+# Install script for directory: C:/Users/mohamed nour/Desktop/AI_Project/cpp
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/mohamed nour/Desktop/New folder (2)/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/Users/mohamed nour/Desktop/AI_Project/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
