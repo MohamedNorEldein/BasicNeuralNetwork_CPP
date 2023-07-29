@@ -3,6 +3,7 @@ from TensorLib import*
 import pandas as pd
 import numpy as np
 import math
+import h5py
 
 def normalize( ar1 :list):
     mx = max(ar1)
@@ -116,10 +117,18 @@ class NeuralNetwork:
         tf = TensorCover(pointer= func(self.pointer, i))
         return tf
     
-    def getWeightsAsDataFrame(self):
+    def tofile(self, name:str):
         ws = []
         for i in range(0, self.layerNum):
-            ws.append(self.getWeight(i).tolist())
-            
-        return pd.DataFrame( self.getWeight(0).tolist())
+            ws.append(self.getWeight(i).toArray())
+                    
+        pd.DataFrame(ws).to_csv(name)
+
+    def fromfile(self, name:str):
+        data = pd.read_csv(name).values.astype(float)
+        
+        for i in range(0, len(data)):
+            self.getWeight(i).fromArray(data[i][1:])
+
+
 

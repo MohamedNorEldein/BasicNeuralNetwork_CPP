@@ -36,6 +36,7 @@ class Tensor:
         self.pointer = func(numrows,numColumns,c_array)
         return
     
+    
     def getPointer(self):
         return self.pointer
     
@@ -135,6 +136,30 @@ class Tensor:
                 a.append(self.getitem(i,j))
             out.append(a)    
         return out    
+    
+    def toArray(self)->list:
+        n1 = self.getRowsNum()
+        n2 = self.getColumnNum()
+        out = []
+        for i in range(0,n1):
+            for j in range(0,n2):
+                out.append(self.getitem(i,j))
+        return out   
+
+
+    def fromArray(self, array):
+        n1 = self.getRowsNum()
+        n2 = self.getColumnNum()
+        #print(len(array))
+       
+        if(len(array) == n1*n2):
+            for i in range(0,n1):
+                for j in range(0,n2):
+                    self.setitem(i,j,array[i*n2+j])
+                    
+            return   
+        else :
+            print("dimminsion error")
 
     
     def fromlist(self, array):

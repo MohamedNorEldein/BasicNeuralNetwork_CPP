@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import NeuralNetworksLib
-import math
+import h5py
 import matplotlib.pyplot as plt
 
 
@@ -23,7 +23,7 @@ def readTrainData(string:str):
     a:int = len(dataF)
 
     x = dataF.iloc[:a,1:].values.astype(float)
-    y = pd.get_dummies(dataF["label"]).values[:a].astype(float)
+    y = dataF["label"]
     
     return x,y
 
@@ -39,31 +39,34 @@ def readTestData(string:str):
 
 def main():
 
-    train_x , train_y = readTrainData("digit-recognizer\\train.csv")
-    test_x  = readTestData("digit-recognizer\\test.csv")
-
-
+    train_x , _y = readTrainData("digit-recognizer\\train.csv")
+   # test_x  = readTestData("digit-recognizer\\test.csv")
+    a = len(train_x) * 3 // 4
+    a=10
+    train_y = pd.get_dummies(_y.values).values.astype(float)
     nn = NeuralNetworksLib.NeuralNetwork(train_x.shape[1])
-    nn.addLogisticLayer(train_y.shape[1])
+    nn.addLayer(25)
+    nn.addLayer(train_y.shape[1])
 
     print("start reading weight matrix \n" )
 
-    array = pd.read_csv("./file.csv").iloc[:,1:]
-    nn.getWeight(0).fromlist(array.values)
-    #nn.getWeight(0).print()
+    #nn.fromfile("./file.csv")
     
     print("finish reading\n" )
-
-    #nn.train(train_x,train_y,5,0.8)
-    w1 = nn.getWeightsAsDataFrame()
-    w1.to_csv("file.csv")
+    
+    nn.train(train_x[:a],train_y[:a],1,10)
+    
+    print(nn.calcOutput(train_x[0]))
+    #nn.tofile("file.csv")
     
     print(f"end \n ")
-    
-    for i in range(0,30):
-        print(i , dummies_to_numbers(nn.calcOutput(test_x[i])))
-        plt.imshow(test_x[i].reshape(28,28),cmap='gray')
-        plt.show()
+    test_x = train_x[a:]
+    test_y = _y[a:]
+
+   # for i in range(0,30):
+   #     print(i , dummies_to_numbers(nn.calcOutput(test_x[i])),test_y[i])
+        #plt.imshow(test_x[i].reshape(28,28),cmap='gray')
+        #plt.show()
 
 
 if(__name__=='__main__'):

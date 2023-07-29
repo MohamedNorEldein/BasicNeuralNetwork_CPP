@@ -403,7 +403,7 @@ private:
     size_t DIMENSION2; // no of coulmns = no of elements in a row
 
 private:
-    void copy(Type *otherTensor)
+    void copy(Type *otherTensor, size_t startI = 0, Type startV = 0)
     {
 
 #ifdef _DEBUG
@@ -414,12 +414,17 @@ private:
         {
             for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
             {
-                data[i] = 0;
+                data[i] = startV;
             }
         }
         else
         {
-            for (size_t i = 0; i < DIMENSION1 * DIMENSION2; i++)
+            for (size_t i = 0; i < startI; i++)
+            {
+                data[i] = startV;
+            }
+
+            for (size_t i = startI; i < DIMENSION1 * DIMENSION2; i++)
             {
                 data[i] = otherTensor[i];
             }
@@ -526,6 +531,39 @@ public:
                 result->setElement(i, j, sum);
             }
         }
+    }
+
+    static Type regresionMull_inner(Tensor<Type> *matrix, Tensor<Type> *vector, size_t index, size_t index2)
+    {
+        Type a = matrix->getElement(index, 0);
+
+        size_t count = vector->getRowsNum();
+
+        for (size_t i = 0; i < count; i++)
+        {
+            a += matrix->getElement(index, i + 1) * vector->getElement(i, index2);
+        }
+
+        return a;
+    }
+
+    static int stat_regresionMull(Tensor<Type> *matrix, Tensor<Type> *vector, Tensor<Type> *result)
+    {
+        if (matrix->getColumnNum() == vector->getRowsNum() + 1)
+        {
+            size_t count1 = matrix->getRowsNum(), count2 = vector->getColumnNum();
+
+            for (size_t i = 0; i < count1; i++)
+            {
+                for (size_t j = 0; j < count2; j++)
+                {
+                    result->setElement(i, 0, regresionMull_inner(matrix, vector, i, j));
+                }
+            }
+            return 0;
+        }
+
+        return 1;
     }
 
 private:
@@ -644,11 +682,11 @@ public:
 #endif
     }
 
-    Tensor(size_t DIMENSION1, size_t DIMENSION2, float *fdata) : DIMENSION1(DIMENSION1), DIMENSION2(DIMENSION2)
+    Tensor(size_t DIMENSION1, size_t DIMENSION2, float *fdata, size_t startI = 0, Type startV = 0) : DIMENSION1(DIMENSION1), DIMENSION2(DIMENSION2)
     {
 
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
-        copy(fdata);
+        copy(fdata, startI, startV);
 
 #ifdef _DEBUG
         printf("created\n");
@@ -656,7 +694,7 @@ public:
 #endif
     }
 
-    Tensor( Tensor &otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
+    Tensor(Tensor &otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
     {
 
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
@@ -667,18 +705,18 @@ public:
         counter++;
 #endif
     }
-    
-        Tensor(Tensor &&otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
-        {
-            data = otherTensor.data;
-            otherTensor.data = 0;
 
-    #ifdef _DEBUG
-            printf("created\n");
-            counter++;
-    #endif
-        }
-    
+    Tensor(Tensor &&otherTensor) : DIMENSION1(otherTensor.DIMENSION1), DIMENSION2(otherTensor.DIMENSION2)
+    {
+        data = otherTensor.data;
+        otherTensor.data = 0;
+
+#ifdef _DEBUG
+        printf("created\n");
+        counter++;
+#endif
+    }
+
     ~Tensor()
     {
         free(data);
@@ -771,6 +809,14 @@ public:
         return result;
     }
 
+
+    void operator*=(Type scaler) const
+    {
+        
+        mull(scaler, (Tensor *)this, (Tensor *)this);
+        
+    }
+
     Tensor operator*(const Tensor &other) const
     {
 
@@ -807,17 +853,17 @@ public:
         copy(other.data);
         // printf("%x %x\n",data, other.data);
     }
-    
-        void set(Tensor &&other)
-        {
 
-            DIMENSION1 = other.DIMENSION1;
-            DIMENSION2 = other.DIMENSION2;
+    void set(Tensor &&other)
+    {
 
-            data = other.data;
-            other.data = 0;
-        }
-    
+        DIMENSION1 = other.DIMENSION1;
+        DIMENSION2 = other.DIMENSION2;
+
+        data = other.data;
+        other.data = 0;
+    }
+
 public:
     Tensor inverse()
     {
@@ -930,9 +976,9 @@ public:
         data = newData;
     }
 
-    void copyData(Type *fdata)
+    void copyData(Type *fdata, size_t startIndex = 0, Type startvalue = 0)
     {
-        copy(fdata);
+        copy(fdata, startIndex, startvalue);
     }
 
     void setData(Type *fdata, size_t n, size_t m)
@@ -945,6 +991,11 @@ public:
     void ZERO()
     {
         copy(0);
+    }
+
+    void ONES()
+    {
+        copy(0,0,1);
     }
 
     Type *getData()
@@ -971,6 +1022,13 @@ public:
         {
             result.data[i] = func(data[i]);
         }
+        return result;
+    }
+
+    static Tensor<Type> regresionMull(const Tensor<Type> &matrix, const Tensor<Type> &vector)
+    {
+        Tensor<Type> result(matrix.getRowsNum(), vector.getColumnNum());
+        stat_regresionMull((Tensor<Type> *)&matrix, (Tensor<Type> *)&vector, &result);
         return result;
     }
 };
@@ -1058,7 +1116,7 @@ void generate(Tensor<Type> &tensor)
     {
         for (size_t j = 0; j < DIMENSION2; j++)
         {
-            tensor.setElement(i, j, Type(rand() % 100) / 1000);
+            tensor.setElement(i, j, Type(rand() % 100) / 10000);
         }
     }
 }
