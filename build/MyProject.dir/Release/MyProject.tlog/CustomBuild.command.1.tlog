@@ -1,6 +1,6 @@
-^C:\USERS\MOHAMED NOUR\DESKTOP\AI_PROJECT\CPP\CMAKELISTS.TXT
+^C:\USERS\MOHAMED NOUR\DESKTOP\NEURALNETWORK_PROJECT\CPP\CMAKELISTS.TXT
 setlocal
-"D:\Computer scinece\cmake\bin\cmake.exe" "-SC:/Users/mohamed nour/Desktop/AI_Project/cpp" "-BC:/Users/mohamed nour/Desktop/AI_Project/build" --check-stamp-file "C:/Users/mohamed nour/Desktop/AI_Project/build/CMakeFiles/generate.stamp"
+"D:\Computer scinece\cmake\bin\cmake.exe" "-SC:/Users/mohamed nour/Desktop/NeuralNetwork_Project/cpp" "-BC:/Users/mohamed nour/Desktop/NeuralNetwork_Project/build" --check-stamp-file "C:/Users/mohamed nour/Desktop/NeuralNetwork_Project/build/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

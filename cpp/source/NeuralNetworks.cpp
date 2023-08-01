@@ -36,7 +36,9 @@ float dsigmoid(float y)
     return y * (1 - y);
 }
 
-NeuralNetworks::NeuralNetworks(size_t inputNum) : weights(), gradints(), outputs(), inputNum(inputNum), outNum(inputNum)
+NeuralNetworks::NeuralNetworks(size_t inputNum) : 
+weights(), weights_gradints(),err(), outputs(),bias(),bias_gradints(),
+ inputNum(inputNum), outNum(inputNum)
 {
 }
 NeuralNetworks::~NeuralNetworks()
@@ -46,12 +48,21 @@ NeuralNetworks::~NeuralNetworks()
 void NeuralNetworks::addLayer(size_t outputNum, float (*func)(float), float (*dfunc)(float), float *data)
 {
     weights.push_back(TensorFloat(outputNum, outNum));
-    gradints.push_back(TensorFloat(outputNum, 1, 0));
+    weights_gradints.push_back(TensorFloat(outputNum, outNum));
+
+    err.push_back(TensorFloat(outputNum, 1, 0));
     outputs.push_back(TensorFloat(outputNum, 1, 0));
+
+    bias.push_back(TensorFloat(outputNum, 1, 0));
+    bias_gradints.push_back(TensorFloat(outputNum, 1, 0));
 
     funcs.push_back(func);
     dfuncs.push_back(dfunc);
+
     outNum = outputNum;
+    
+    bias.back().ZERO();
+    
     if (!data)
         weights.back().ZERO();
     else
@@ -66,11 +77,11 @@ void NeuralNetworks::print(std::vector<TensorFloat> &ws)
 
 TensorFloat NeuralNetworks::calcOutput(const TensorFloat &x)
 {
-    outputs[0] = (weights[0] * x).applyFunction(funcs[0]);
+    outputs[0] = (weights[0] * x + bias[0]).applyFunction(funcs[0]);
 
     for (size_t i = 1; i < outputs.size(); i++)
     {
-        outputs[i] = (weights[i] * outputs[i - 1]).applyFunction(funcs[i]);
+        outputs[i] = (weights[i] * outputs[i - 1] + bias[i]).applyFunction(funcs[i]);
     }
 
     return outputs.back();
@@ -85,41 +96,70 @@ void NeuralNetworks::backwordProbagration(const TensorFloat &x, const TensorFloa
 {
     TensorFloat error(calcError(x, y));
 
-    gradints[outputs.size() - 1] = error.elementMul(outputs.back().applyFunction(dfuncs.back()));
+    err[outputs.size() - 1] = error.elementMul(outputs.back().applyFunction(dfuncs.back()));
 
     for (size_t i = outputs.size() - 1; i > 0; --i)
     {
-        gradints[i - 1] = ((weights[i].transpose() * gradints[i]).elementMul(outputs[i - 1].applyFunction(dfuncs[i - 1])));
+        err[i - 1] = ((weights[i].transpose() * err[i]).elementMul(outputs[i - 1].applyFunction(dfuncs[i - 1])));
     }
 }
 
-void NeuralNetworks::forwardBass(const TensorFloat &x, const TensorFloat &y, float learningRate)
+void NeuralNetworks::forwardBass(const TensorFloat &x, const TensorFloat &y)
 {
-    weights[0] += gradints[0] * x.transpose() * (learningRate);
+    weights_gradints[0] += err[0] * x.transpose();
+    bias_gradints[0] += err[0];
+
     for (size_t i = 1; i < weights.size(); i++)
     {
-        weights[i] += gradints[i] * outputs[i - 1].transpose() * (learningRate);
+        weights_gradints[i] += err[i] * outputs[i - 1].transpose();
+        bias_gradints[i] += err[i];
     }
 }
+
+
+void NeuralNetworks::update(float learning)
+{
+   
+    for (size_t i = 0; i < weights.size(); i++)
+    {
+        weights[i] += weights_gradints[i] * (learning);
+        bias[i] += bias_gradints[i];
+    }
+}
+
+
+void NeuralNetworks::ZERO()
+{
+   
+    for (size_t i = 0; i < weights.size(); i++)
+    {
+        weights_gradints[i].ZERO();
+        bias_gradints[i].ZERO();
+    }
+}
+
+
 
 float NeuralNetworks::Probagration(float **_x, float **_y, size_t n, float learningRate)
 {
     TensorFloat x, y;
     float er = 0;
 
+ZERO();
     for (size_t i = 0; i < n; i++)
     {
         x.setData(_x[i], inputNum, 1);
         y.setData(_y[i], outNum, 1);
 
         backwordProbagration(x, y);
-        forwardBass(x, y, learningRate);
+        forwardBass(x, y);
 
         er += (y - outputs.back()).norm();
 
         x.setData(0, 0, 0);
         y.setData(0, 0, 0);
     }
+    update(learningRate);
     return er;
 }
 
@@ -127,14 +167,14 @@ float NeuralNetworks::Probagration(float *_x, float *_y, size_t n, float learnin
 {
     TensorFloat x, y;
     float er = 0;
-
+ZERO();
     for (size_t i = 0; i < n; i++)
     {
         x.setData(_x, inputNum, 1);
         y.setData(_y, outNum, 1);
 
         backwordProbagration(x, y);
-        forwardBass(x, y, learningRate);
+        forwardBass(x, y);
 
         er += (y - outputs.back()).norm();
 
@@ -143,6 +183,8 @@ float NeuralNetworks::Probagration(float *_x, float *_y, size_t n, float learnin
         _x += inputNum;
         _y += outNum;
     }
+    update(learningRate);
+
     return er;
 }
 
@@ -288,20 +330,20 @@ int main()
         -0.260323, -0.271469};
 
     NeuralNetworks Lr(a);
-    // Lr.addLayer(5, eqFunc, unity);
-    // Lr.addLayer(2, sigmoid, dsigmoid);
+    Lr.addLayer(5, eqFunc, unity);
+    Lr.addLayer(2, sigmoid, dsigmoid);
 
     Lr.addLayer(b, sigmoid, dsigmoid);
 
     generate(Lr.getWeight(0));
-    // generate(Lr.weights[1]);
-    // generate(Lr.weights[2]);
+    generate(Lr.weights[1]);
+    generate(Lr.weights[2]);
 
     // printf(Lr.weights[0]);
     // printf(Lr.weights[1]);
     // printf(Lr.weights[2]);
 
-    printf("%f\n", Lr.learn(x, y, count / 2, x + count / 2, y + count / 2, count / 2, 100000, 0.001));
+    printf("%f\n", Lr.train(x, y, count, 1000000, 0.001));
 
     printf("*********************************************\n");
 
@@ -316,6 +358,10 @@ int main()
         print(Lr.calcOutput(TensorFloat(a, 1, x[i])).getData(), b);
         printf("------------------------------------\n");
     }
+    printf(Lr.bias[0]);
+    printf(Lr.bias[1]);
+    printf(Lr.bias[2]);
+
 
     getchar();
     return 0;

@@ -15,8 +15,8 @@ float unity(float a);
 
 class NeuralNetworks
 {
-private:
-    std::vector<TensorFloat> weights, gradints, outputs;
+public:
+    std::vector<TensorFloat> weights, weights_gradints,err, outputs, bias, bias_gradints;
     size_t inputNum, outNum;
     std::vector<float (*)(float)> funcs;
     std::vector<float (*)(float)> dfuncs;
@@ -46,7 +46,11 @@ public:
 private:
     void backwordProbagration(const TensorFloat &x, const TensorFloat &y);
 
-    void forwardBass(const TensorFloat &x, const TensorFloat &y, float learningRate);
+    void forwardBass(const TensorFloat &x, const TensorFloat &y);
+    void update(float);
+    void ZERO();
+
+
 public:
     float Probagration(float **_x, float **_y, size_t n, float learningRate);
 

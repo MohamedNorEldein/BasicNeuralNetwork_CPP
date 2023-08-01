@@ -2,10 +2,10 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\mohamed nour\Desktop\AI_Project\build\x64\Release\ZERO_CHECK</FullPath>
+      <FullPath>C:\Users\mohamed nour\Desktop\NeuralNetwork_Project\build\x64\Release\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>C:\Users\mohamed nour\Desktop\AI_Project\build\Release\MyProject.dll</FullPath>
+      <FullPath>C:\Users\mohamed nour\Desktop\NeuralNetwork_Project\build\Release\MyProject.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

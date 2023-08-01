@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\source\Stat.cpp">
+    <ClCompile Include="C:\Users\mohamed nour\Desktop\NeuralNetwork_Project\cpp\source\Stat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\source\CAPI.cpp">
+    <ClCompile Include="C:\Users\mohamed nour\Desktop\NeuralNetwork_Project\cpp\source\CAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\source\NeuralNetworks.cpp">
+    <ClCompile Include="C:\Users\mohamed nour\Desktop\NeuralNetwork_Project\cpp\source\NeuralNetworks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\mohamed nour\Desktop\AI_Project\cpp\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\mohamed nour\Desktop\NeuralNetwork_Project\cpp\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{97F4CE77-B258-3E72-8160-236062D41160}</UniqueIdentifier>
+      <UniqueIdentifier>{AA0D79B1-11B2-3D67-85B4-9D5798F3AE2C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
