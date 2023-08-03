@@ -2,10 +2,13 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "Release/MyProject.exe"
+			"path" : "Debug/MyProject.dll"
 		},
 		{
-			"path" : "Release/MyProject.pdb"
+			"path" : "Debug/MyProject.lib"
+		},
+		{
+			"path" : "Debug/MyProject.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -13,7 +16,7 @@
 	{
 		"commands" : 
 		[
-			"add_executable"
+			"add_library"
 		],
 		"files" : 
 		[
@@ -27,7 +30,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 13,
+				"line" : 16,
 				"parent" : 0
 			}
 		]
@@ -38,7 +41,13 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG"
+					"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "MyProject_EXPORTS"
 				}
 			],
 			"language" : "CXX",
@@ -62,11 +71,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG",
-				"role" : "flags"
-			},
-			{
-				"fragment" : "/machine:x64 /INCREMENTAL:NO /subsystem:console",
+				"fragment" : "/machine:x64 /debug /INCREMENTAL",
 				"role" : "flags"
 			},
 			{
@@ -77,7 +82,7 @@
 		"language" : "CXX"
 	},
 	"name" : "MyProject",
-	"nameOnDisk" : "MyProject.exe",
+	"nameOnDisk" : "MyProject.dll",
 	"paths" : 
 	{
 		"build" : ".",
@@ -116,5 +121,5 @@
 			"sourceGroupIndex" : 0
 		}
 	],
-	"type" : "EXECUTABLE"
+	"type" : "SHARED_LIBRARY"
 }

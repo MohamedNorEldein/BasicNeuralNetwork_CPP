@@ -12,18 +12,18 @@ float unity(float a)
     return 1;
 }
 
-float uintStepFunc(float a)
+float dRelu(float a)
 {
     if (a > 0)
         return 1;
-    return 0;
+    return 0.00001;
 }
 
-float posLinearFunc(float a)
+float relu(float a)
 {
     if (a > 0)
         return a;
-    return 0;
+    return 0.00001 * a;
 }
 
 float sigmoid(float x)
@@ -36,9 +36,33 @@ float dsigmoid(float y)
     return y * (1 - y);
 }
 
-NeuralNetworks::NeuralNetworks(size_t inputNum) : 
-weights(), weights_gradints(),err(), outputs(),bias(),bias_gradints(),
- inputNum(inputNum), outNum(inputNum)
+float ftanh(float x)
+{
+    return tanh(x);
+}
+
+float dtanh(float x)
+{
+    return 1 - x * x;
+}
+
+
+float func1(float y, float fz)
+{
+    return (y - fz);
+}
+
+float func2(float y, float fz)
+{
+    float r = abs(y - fz);
+   return (1 / (1.00001f - r)) * (y - fz);
+#ifdef DEBUG_NEURAL_NETWORK
+    // printf("\tr = %f, er = %f\n", r, result[i][0]);
+#endif
+}
+
+NeuralNetworks::NeuralNetworks(size_t inputNum) : weights(), weights_gradints(), err(), outputs(), bias(), bias_gradints(),
+                                                  inputNum(inputNum), outNum(inputNum),errorFunction(func1)
 {
 }
 NeuralNetworks::~NeuralNetworks()
@@ -60,9 +84,9 @@ void NeuralNetworks::addLayer(size_t outputNum, float (*func)(float), float (*df
     dfuncs.push_back(dfunc);
 
     outNum = outputNum;
-    
+
     bias.back().ZERO();
-    
+
     if (!data)
         weights.back().ZERO();
     else
@@ -87,9 +111,24 @@ TensorFloat NeuralNetworks::calcOutput(const TensorFloat &x)
     return outputs.back();
 }
 
+
+TensorFloat ErrorFunction(const TensorFloat &y, const TensorFloat &fz, float (*func)(float, float))
+{
+    size_t n = y.getRowsNum();
+    TensorFloat result(n, 1);
+    float r;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        result[i][0] = func(y[i][0], fz[i][0]);
+    }
+
+    return result;
+}
+
 TensorFloat NeuralNetworks::calcError(const TensorFloat &x, const TensorFloat &y)
 {
-    return (y - calcOutput(x));
+    return ErrorFunction(y, calcOutput(x),errorFunction);
 }
 
 void NeuralNetworks::backwordProbagration(const TensorFloat &x, const TensorFloat &y)
@@ -116,21 +155,19 @@ void NeuralNetworks::forwardBass(const TensorFloat &x, const TensorFloat &y)
     }
 }
 
-
 void NeuralNetworks::update(float learning)
 {
-   
+
     for (size_t i = 0; i < weights.size(); i++)
     {
         weights[i] += weights_gradints[i] * (learning);
-        bias[i] += bias_gradints[i];
+        bias[i] += bias_gradints[i] * (learning);
     }
 }
 
-
 void NeuralNetworks::ZERO()
 {
-   
+
     for (size_t i = 0; i < weights.size(); i++)
     {
         weights_gradints[i].ZERO();
@@ -138,14 +175,12 @@ void NeuralNetworks::ZERO()
     }
 }
 
-
-
 float NeuralNetworks::Probagration(float **_x, float **_y, size_t n, float learningRate)
 {
     TensorFloat x, y;
     float er = 0;
 
-ZERO();
+    ZERO();
     for (size_t i = 0; i < n; i++)
     {
         x.setData(_x[i], inputNum, 1);
@@ -159,7 +194,7 @@ ZERO();
         x.setData(0, 0, 0);
         y.setData(0, 0, 0);
     }
-    update(learningRate);
+    update(learningRate / n);
     return er;
 }
 
@@ -167,7 +202,7 @@ float NeuralNetworks::Probagration(float *_x, float *_y, size_t n, float learnin
 {
     TensorFloat x, y;
     float er = 0;
-ZERO();
+    ZERO();
     for (size_t i = 0; i < n; i++)
     {
         x.setData(_x, inputNum, 1);
@@ -183,7 +218,7 @@ ZERO();
         _x += inputNum;
         _y += outNum;
     }
-    update(learningRate);
+    update(learningRate / n);
 
     return er;
 }
@@ -218,11 +253,11 @@ float NeuralNetworks::train(float *learn_x, float *learn_y, size_t n, size_t cou
         {
             er = Probagration(learn_x, learn_y, n, learningRate);
         }
-//#if _DEBUG
-        printf("%f, %f \n", er,er/n);
-//#endif
-        // if(abs(er-e2)<er/100)
-        //    return er;
+#ifdef DEBUG_NEURAL_NETWORK
+        printf("%f, %f \n", er, er / n);
+#endif
+        //  if(abs(er-e2)<er/100)
+        //     return er;
         e2 = er;
     }
     return er;
@@ -301,6 +336,12 @@ float NeuralNetworks::learn(float *train_x, float *train_y, size_t train_n, floa
     return er;
 }
 
+    void NeuralNetworks::setErrorFunction(float (*func_new)(float, float)){
+        this->errorFunction = func_new;
+    }
+
+
+
 int main()
 {
     const size_t count = 50, a = 4, b = 2;
@@ -339,29 +380,24 @@ int main()
     generate(Lr.weights[1]);
     generate(Lr.weights[2]);
 
-    // printf(Lr.weights[0]);
-    // printf(Lr.weights[1]);
-    // printf(Lr.weights[2]);
+    printf(Lr.bias[0]);
+    printf(Lr.bias[1]);
+    printf(Lr.bias[2]);
 
-    printf("%f\n", Lr.train(x, y, count, 1000000, 0.001));
+    printf("%f\n", Lr.learn(x, y, count * 4 / 5, x + count * 4 / 5, y + count * 4 / 5, count * 1 / 5, 1000000, 0.1));
 
     printf("*********************************************\n");
 
     for (size_t i = 0; i < count; i++)
     {
 
-        // printf("x[%u]\t:",i);
-        // print(x[i],a);
-        printf("y[%u]\t:", i);
-        print(y[i], b);
         printf("fz[%u]\t:", i);
-        print(Lr.calcOutput(TensorFloat(a, 1, x[i])).getData(), b);
+        print(Lr.calcError(TensorFloat(a, 1, x[i]), TensorFloat(b, 1, y[i])).getData(), b);
         printf("------------------------------------\n");
     }
     printf(Lr.bias[0]);
     printf(Lr.bias[1]);
     printf(Lr.bias[2]);
-
 
     getchar();
     return 0;

@@ -177,6 +177,36 @@ class Tensor:
             print("dimminsion error")
 
 
+    def toArray(self)->list:
+        n1 = self.getRowsNum()
+        n2 = self.getColumnNum()
+        out = []
+        for i in range(0,n1):
+            for j in range(0,n2):
+                out.append(self.getitem(i,j))
+        return out   
+
+
+    def fromArray(self, array):
+        n1 = self.getRowsNum()
+        n2 = self.getColumnNum()
+        #print(len(array))
+       
+        if(len(array) == n1*n2):
+            for i in range(0,n1):
+                for j in range(0,n2):
+                    self.setitem(i,j,array[i*n2+j])
+                    
+            return   
+        else :
+            print("dimminsion error")
+
+    def Generate(self, base :float):
+        func =  file.generateTensorFloat
+        func.argtypes = [ctypes.c_void_p,ctypes.c_float]
+        func(self.pointer,base)
+
+    
     
 class TensorCover(Tensor):
     def __del__(self):

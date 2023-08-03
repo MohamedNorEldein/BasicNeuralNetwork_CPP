@@ -5,18 +5,7 @@ import numpy as np
 import math
 import h5py
 
-def normalize( ar1 :list):
-    mx = max(ar1)
-    mn = min(ar1)
-    for i in range(0,len(ar1)):
-        ar1[i] = (ar1[i] - mn)/(mx-mn)
-    return ar1
 
-def listRound(ar1:list):
-    for i in range(0,len(ar1)):
-            for j in range(0,len(ar1[i])):
-                ar1[i][j] = round(ar1[i][j],3)
-    return ar1    
 
 class NeuralNetwork:
     def __init__(self, inputNum) -> None:
@@ -37,27 +26,26 @@ class NeuralNetwork:
         func(self.pointer)
         return
 
-    def addLayer(self, count:int, data = None):
-        func = file.addLayerNeuralNetwork
-        func.argtypes = [ctypes.c_void_p,ctypes.c_size_t,ctypes.c_void_p]
-        self.layerNum += 1
-        if(data == None):
-            func(self.pointer,count, 0)
-            return
-        
-        func(self.pointer,count, (ctypes.c_float * len(data))(*data))
-        return
-    
-    def addLogisticLayer(self, count:int, data = None):
-        func = file.addLogisticLayerNeuralNetwork
-        self.layerNum += 1
-        func.argtypes = [ctypes.c_void_p,ctypes.c_size_t,ctypes.c_void_p]
+    @staticmethod
+    def _activation(act :str)->int:
+        if(act=="relu"):
+            return 0
+        if(act=="linear"):
+            return 1
+        if(act=="sigmoid"):
+            return 2
+        if(act=="tanh"):
+            return 3
 
+    def addLayer(self, count:int, data = None, activation:str = "relu"):
+        func = file.addLayerNeuralNetwork
+        func.argtypes = [ctypes.c_void_p,ctypes.c_size_t,ctypes.c_void_p,ctypes.c_uint8]
+        self.layerNum += 1
         if(data == None):
-            func(self.pointer,count, 0)
+            func(self.pointer,count, 0,self._activation(activation))
             return
         
-        func(self.pointer,count, (ctypes.c_float * len(data))(*data))
+        func(self.pointer,count, (ctypes.c_float * len(data))(*data),self._activation(activation))
         return
 
     def calcOutputTensor(self, x:Tensor)->Tensor:
@@ -70,8 +58,8 @@ class NeuralNetwork:
     
     def calcOutput(self, x:list)->list:
         t1 = Tensor()
-        t1.init(numrows= len(x),numColumns= 1,python_array= normalize(x))
-        return listRound(self.calcOutputTensor(t1).tolist())
+        t1.init(numrows= len(x),numColumns= 1,python_array= x)
+        return self.calcOutputTensor(t1).tolist()
 
     def print(self):
         #print("print self.pointer : ",self.pointer,"\n")
@@ -99,7 +87,7 @@ class NeuralNetwork:
         a =  train_x.shape[0]
         ar1 =  train_x.flatten().astype(float).tolist()
         ar2 = train_y.flatten().astype(float).tolist()
-        return  self.train_1dList( normalize(ar1), normalize(ar2),a,count,learningRate)
+        return  self.train_1dList( ar1, ar2,a,count,learningRate)
 
     def batchTrain(self, train_x , train_y,count:int, learningRate:float,b:float=1.6):
         a = int(math.log2(len(train_x)) / math.log2(b))
@@ -129,6 +117,3 @@ class NeuralNetwork:
         
         for i in range(0, len(data)):
             self.getWeight(i).fromArray(data[i][1:])
-
-
-

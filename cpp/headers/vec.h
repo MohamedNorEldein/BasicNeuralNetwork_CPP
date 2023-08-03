@@ -390,7 +390,7 @@ public:
 
 /****************tensor****************/
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
 static size_t counter;
 #endif
 
@@ -406,7 +406,7 @@ private:
     void copy(Type *otherTensor, size_t startI = 0, Type startV = 0)
     {
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("****************************copy\n");
 #endif
 
@@ -509,7 +509,7 @@ public:
         size_t DIMENSION2 = tensor1->getColumnNum();
         size_t DIMENSION3 = tensor2->getColumnNum();
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("(%u x %u) * (%u x %u)\n", tensor1->getRowsNum(), tensor1->getColumnNum(), tensor2->getRowsNum(), tensor2->getColumnNum());
 #endif
 
@@ -645,7 +645,7 @@ private:
                     addScaledRow(augmentedMatrix, augmentedDimension, j, i, -factor);
                 }
             }
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
             printf("inverted\n");
 #endif
         }
@@ -668,7 +668,7 @@ public:
 
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("created\n");
         counter++;
 #endif
@@ -676,7 +676,7 @@ public:
     Tensor(void) : DIMENSION1(0), DIMENSION2(0)
     {
         data = 0;
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("created\n");
         counter++;
 #endif
@@ -688,7 +688,7 @@ public:
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
         copy(fdata, startI, startV);
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("created\n");
         counter++;
 #endif
@@ -700,7 +700,7 @@ public:
         data = (Type *)malloc(DIMENSION1 * DIMENSION2 * sizeof(Type));
         copy(otherTensor.data);
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("created\n");
         counter++;
 #endif
@@ -711,7 +711,7 @@ public:
         data = otherTensor.data;
         otherTensor.data = 0;
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("created\n");
         counter++;
 #endif
@@ -721,7 +721,7 @@ public:
     {
         free(data);
 
-#ifdef _DEBUG
+#ifdef DEBUG_VECTORS
         printf("Tensor deleted\n");
         counter--;
 #endif
@@ -1033,7 +1033,7 @@ public:
     }
 };
 
-/***************debug*****************/
+/***************DEBUG_VECTORS*****************/
 
 #include <iostream>
 template <typename Type, uint8 DIMENSION>
@@ -1107,7 +1107,7 @@ void generate(Matrix<Type, DIMENSION> &mat)
 }
 
 template <typename Type>
-void generate(Tensor<Type> &tensor)
+void generate(Tensor<Type> &tensor,float a=100)
 {
     size_t DIMENSION1 = tensor.getRowsNum();
     size_t DIMENSION2 = tensor.getColumnNum();
@@ -1116,7 +1116,7 @@ void generate(Tensor<Type> &tensor)
     {
         for (size_t j = 0; j < DIMENSION2; j++)
         {
-            tensor.setElement(i, j, Type(rand() % 100) / 10000);
+            tensor.setElement(i, j, Type(rand() % 100) / a);
         }
     }
 }

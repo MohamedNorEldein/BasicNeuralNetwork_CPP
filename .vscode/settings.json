@@ -49,5 +49,6 @@
         "vector": "cpp"
     },
     "cmake.sourceDirectory": "C:/Users/mohamed nour/Desktop/NeuralNetwork_Project/cpp",
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.errorSquiggles": "disabled"
 }

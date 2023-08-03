@@ -10,9 +10,9 @@ set(SOURCES
     )
 
 # Add executable target
-add_executable(MyProject ${SOURCES})
+#add_executable(MyProject ${SOURCES})
 
 # Add dll target
-#add_library(MyProject SHARED ${SOURCES})
+add_library(MyProject SHARED ${SOURCES})
 
 

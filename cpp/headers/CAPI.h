@@ -50,8 +50,8 @@ CAPI size_t getColumnNum(void *a);
 
 CAPI void *CreateNeuralNetwork(size_t inputNum);
 CAPI void DeleteNeuralNetwork(void *);
-CAPI void addLayerNeuralNetwork(void *, size_t,void*);
-CAPI void addLogisticLayerNeuralNetwork(void *pNeuralNetwork, size_t outputNum, void *data);
+CAPI void addLayerNeuralNetwork(void *, size_t,void*, unsigned char );
+
 CAPI void* calcOutputNeuralNetwork(void *, void*);
 CAPI void* calcErrorNeuralNetwork(void *,  void*,  void *);
 

@@ -1,12 +1,11 @@
 #include "../headers/CAPI.h"
 
-
 #define pTensor Tensor<float> *
 
 CAPI void *createTensorFloat(size_t rowNum, size_t columnNum)
 {
     pTensor tf = new Tensor<float>(rowNum, columnNum);
-    //generate(*tf);
+    // generate(*tf);
     return tf;
 }
 
@@ -26,7 +25,7 @@ CAPI void *addTensorFloat(void *tf1, void *tf2)
 {
     pTensor result = new Tensor<float>(((pTensor)tf1)->getRowsNum(), ((pTensor)tf1)->getColumnNum());
     Tensor<float>::add((pTensor)tf1, (pTensor)tf2, result);
-#ifdef _DEBUG
+#ifdef DEBUG_CAPI
     printf("%x, %x, %x\n", tf1, tf2, result);
 #endif
 
@@ -47,11 +46,10 @@ CAPI void *mullTensorFloat(void *tf1, void *tf2)
     return result;
 }
 
-
 CAPI void *scalarmullTensorFloat(void *tf1, float a)
 {
     pTensor result = new Tensor<float>(((pTensor)tf1)->getRowsNum(), ((pTensor)tf1)->getColumnNum());
-    Tensor<float>::mull( a,(pTensor)tf1, result);
+    Tensor<float>::mull(a, (pTensor)tf1, result);
     return result;
 }
 
@@ -62,11 +60,10 @@ CAPI void *transposeTensorFloat(void *tf1)
     return result;
 }
 
-
 CAPI void *inverseTensorFloat(void *tf1)
 {
     pTensor result = new Tensor<float>(((pTensor)tf1)->inverse());
-    
+
     return result;
 }
 
@@ -75,30 +72,29 @@ CAPI void printTensorFloat(void *tf)
     printf(*(pTensor)tf);
 }
 
-
 CAPI void setElementTensorFloat(void *tf, size_t i, size_t j, float value)
 {
-    ((pTensor)tf)->setElement(i,j,value);
-    //printf("%f \n", ((pTensor)tf)->getElement(i,j));
-
+    ((pTensor)tf)->setElement(i, j, value);
+    // printf("%f \n", ((pTensor)tf)->getElement(i,j));
 }
-
 
 CAPI float getElementTensorFloat(void *tf, size_t i, size_t j)
-{   
-//#ifdef _DEBUG
-   // printf("%u, %u, %f\n", i,j,((pTensor)tf)->getElement(i,j));
-//#endif
-    return ((pTensor)tf)->getElement(i,j);
+{
+    // #ifdef DEBUG_CAPI
+    //  printf("%u, %u, %f\n", i,j,((pTensor)tf)->getElement(i,j));
+    // #endif
+    return ((pTensor)tf)->getElement(i, j);
 }
 
-CAPI void* getCorelationMatrix(void* a){
+CAPI void *getCorelationMatrix(void *a)
+{
 
-    Tensor<float>* b = new Tensor<float>( correlationMatrix(*(pTensor)a));
+    Tensor<float> *b = new Tensor<float>(correlationMatrix(*(pTensor)a));
     return b;
 }
 
-CAPI size_t getRowsNum(void *a){
+CAPI size_t getRowsNum(void *a)
+{
     return ((pTensor)a)->getRowsNum();
 }
 
@@ -108,6 +104,10 @@ CAPI size_t getColumnNum(void *a)
 }
 
 
+CAPI void generateTensorFloat(void *a,float b)
+{
+     generate(*((pTensor)a),b);
+}
 
 
 /**********************************************************************************/
@@ -116,10 +116,10 @@ CAPI size_t getColumnNum(void *a)
 
 CAPI void *CreateNeuralNetwork(size_t inputNum)
 {
-    void* ptr = (void*)( new NeuralNetworks(inputNum));
-#if _DEBUG   
-    printf("ptr : %p\n",ptr);
-    #endif
+    void *ptr = (void *)(new NeuralNetworks(inputNum));
+#if DEBUG_CAPI
+    printf("ptr : %p\n", ptr);
+#endif
     return ptr;
 }
 
@@ -128,20 +128,44 @@ CAPI void DeleteNeuralNetwork(void *pNeuralNetwork)
     delete pneural;
 }
 
-CAPI void addLogisticLayerNeuralNetwork(void *pNeuralNetwork, size_t outputNum, void *data)
+CAPI void addLayerNeuralNetwork(void *pNeuralNetwork, size_t outputNum, void *data, unsigned char activation)
 {
-    pneural->addLayer(outputNum, sigmoid, dsigmoid, (float *)data);
-}
+    switch (activation)
+    {
+    case 1:
+        pneural->addLayer(outputNum, eqFunc, unity, (float *)data);
+#ifdef DEBUG_CAPI
+        printf("linear\n");
+#endif
+        break;
 
+    case 2:
+        pneural->addLayer(outputNum, sigmoid, dsigmoid, (float *)data);
+#ifdef DEBUG_CAPI
+        printf("sigmoid\n");
+#endif
+        break;
 
-CAPI void addLayerNeuralNetwork(void *pNeuralNetwork, size_t outputNum, void *data)
-{
-    pneural->addLayer(outputNum, eqFunc, unity, (float *)data);
+    case 3:
+        pneural->addLayer(outputNum, ftanh, dtanh, (float *)data);
+#ifdef DEBUG_CAPI
+        printf("tanh\n");
+#endif
+        break;
+
+    default:
+        pneural->addLayer(outputNum, relu, dRelu, (float *)data);
+#ifdef DEBUG_CAPI
+        printf("relu\n");
+#endif
+
+        break;
+    }
 }
 
 CAPI void *calcOutputNeuralNetwork(void *pNeuralNetwork, void *x)
 {
-    TensorFloat *t1 = new TensorFloat( pneural->calcOutput(*(TensorFloat *)x));
+    TensorFloat *t1 = new TensorFloat(pneural->calcOutput(*(TensorFloat *)x));
     return t1;
 }
 
@@ -151,19 +175,21 @@ CAPI void *calcErrorNeuralNetwork(void *pNeuralNetwork, void *x, void *y)
 }
 CAPI float trainNeuralNetwork(void *pNeuralNetwork, void *x, void *y, size_t count, size_t num, float learningRate)
 {
-    return pneural->train((float*)x,(float*) y, count, num, learningRate);
+    return pneural->train((float *)x, (float *)y, count, num, learningRate);
 }
 
 CAPI float learnNeuralNetwork(void *pNeuralNetwork, void *Learn_x, void *Learn_y, size_t Learn_n,
-                                                    void *test_x, void *test_y, size_t test_n, size_t num, float learningRate)
+                              void *test_x, void *test_y, size_t test_n, size_t num, float learningRate)
 {
-    return pneural->learn((float*)Learn_x,(float*) Learn_y, Learn_n,(float*) test_x, (float*)test_y, test_n, num, learningRate);
+    return pneural->learn((float *)Learn_x, (float *)Learn_y, Learn_n, (float *)test_x, (float *)test_y, test_n, num, learningRate);
 }
 
-CAPI void printNeuralNetworks(void* pNeuralNetwork){
+CAPI void printNeuralNetworks(void *pNeuralNetwork)
+{
     pneural->print(pneural->getWeights());
 }
 
-CAPI void* getWeight(void* pNeuralNetwork, size_t i){
+CAPI void *getWeight(void *pNeuralNetwork, size_t i)
+{
     return &(pneural->getWeight(i));
 }
