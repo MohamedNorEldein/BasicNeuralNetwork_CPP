@@ -58,3 +58,7 @@ CAPI void* calcErrorNeuralNetwork(void *,  void*,  void *);
 CAPI float trainNeuralNetwork(void *, void *, void *, size_t, size_t, float);
 CAPI float learnNeuralNetwork(void *, void *, void *, size_t, void *, void *, size_t, size_t, float);
 CAPI void* getWeight(void* pNeuralNetwork, size_t i);
+
+CAPI void setErrorFunction_MAE(void* a);
+CAPI void setErrorFunction_CrossEntropy(void*);
+

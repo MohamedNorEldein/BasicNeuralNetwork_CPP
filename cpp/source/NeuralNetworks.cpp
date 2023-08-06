@@ -47,12 +47,12 @@ float dtanh(float x)
 }
 
 
-float func1(float y, float fz)
+float Error_func1(float y, float fz)
 {
     return (y - fz);
 }
 
-float func2(float y, float fz)
+float Error_func2(float y, float fz)
 {
     float r = abs(y - fz);
    return (1 / (1.00001f - r)) * (y - fz);
@@ -62,7 +62,7 @@ float func2(float y, float fz)
 }
 
 NeuralNetworks::NeuralNetworks(size_t inputNum) : weights(), weights_gradints(), err(), outputs(), bias(), bias_gradints(),
-                                                  inputNum(inputNum), outNum(inputNum),errorFunction(func1)
+                                                  inputNum(inputNum), outNum(inputNum),errorFunction(Error_func2)
 {
 }
 NeuralNetworks::~NeuralNetworks()

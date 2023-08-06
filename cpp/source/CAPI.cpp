@@ -193,3 +193,14 @@ CAPI void *getWeight(void *pNeuralNetwork, size_t i)
 {
     return &(pneural->getWeight(i));
 }
+
+
+CAPI void setErrorFunction_MAE(void* pNeuralNetwork){
+    pneural->setErrorFunction(Error_func1);
+}
+
+CAPI void setErrorFunction_CrossEntropy(void* pNeuralNetwork){
+    pneural->setErrorFunction(Error_func2);
+
+}
+

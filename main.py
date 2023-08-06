@@ -39,6 +39,7 @@ def readTrainData(string:str):
     x = dataF.iloc[:a,1:].values.astype(float)
     y = dataF["label"]
     normalizeList(x)
+    
     return x,y
 
 
@@ -64,13 +65,14 @@ def main():
 
     print("start reading weight matrix \n" )
     
+
     #nn.fromfile("./file.csv")
     nn.getWeight(0).Generate(10000)
     nn.getWeight(1).Generate(10000)
 
     print("finish reading\n" )
     
-    nn.train( train_x[:a],train_y[:a],1000,0.5)
+    nn.train( train_x[:a],train_y[:a],1000,0.01)
     
     print(nn.calcOutput(train_x[0]),"\n", train_y[0])
     #nn.tofile("file.csv")

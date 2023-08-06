@@ -18,6 +18,8 @@ float dtanh(float x);
 float dRelu(float a);
 float relu(float a);
 
+float Error_func1(float y, float fz);
+float Error_func2(float y, float fz);
 
 class NeuralNetworks
 {
